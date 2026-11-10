@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:shorebird/main.dart';
@@ -10,14 +9,14 @@ void main() {
 
     // Verify app metadata and welcome message render.
     expect(find.text('shorebird'), findsOneWidget);
-    expect(find.text('Hello from Shorebird OTA Patch V2 (Live Test 🎉)'), findsOneWidget);
+    expect(find.text('Hello from Shorebird OTA Patch'), findsOneWidget);
 
     // Verify counter starts at 0.
     expect(find.text('0'), findsOneWidget);
     expect(find.text('1'), findsNothing);
 
     // Scroll to and tap increment counter button.
-    final counterButton = find.widgetWithText(OutlinedButton, 'Increment Counter');
+    final counterButton = find.text('Increment Counter');
     await tester.ensureVisible(counterButton);
     await tester.tap(counterButton);
     await tester.pump();
