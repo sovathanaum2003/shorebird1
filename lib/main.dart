@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'shorebird_demo_screen.dart';
+import 'main_navigation_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,7 +52,7 @@ class ShorebirdApp extends StatelessWidget {
           ),
         ),
       ),
-      home: const ShorebirdDemoScreen(),
+      home: const MainNavigationScreen(),
     );
   }
 }
