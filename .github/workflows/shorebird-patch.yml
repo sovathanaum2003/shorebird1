@@ -1,0 +1,64 @@
+name: Shorebird OTA Patch Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: 'Release track for the patch'
+        required: true
+        default: 'stable'
+        type: choice
+        options:
+          - stable
+          - staging
+          - beta
+      target_version:
+        description: 'Target release version (e.g. 1.0.0+1). Leave blank to auto-detect latest release.'
+        required: false
+        type: string
+        default: ''
+      dry_run:
+        description: 'Perform a dry run preview without publishing to users'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  patch:
+    name: Build & Publish Shorebird Patch
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🐦 Setup Shorebird CLI
+        uses: shorebirdtech/setup-shorebird@v1
+        with:
+          shorebird-token: ${{ secrets.SHOREBIRD_TOKEN }}
+
+      - name: 📦 Install Flutter Dependencies
+        run: flutter pub get
+
+      - name: 🔍 Run Flutter Analyze
+        run: flutter analyze
+
+      - name: 🧪 Run Flutter Tests
+        run: flutter test
+
+      - name: 🚀 Publish Shorebird OTA Patch (Production / Staging)
+        env:
+          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+        run: |
+          ARGS="--track=${{ inputs.track }} --no-confirm"
+          
+          if [ -n "${{ inputs.target_version }}" ]; then
+            ARGS="$ARGS --target-version=${{ inputs.target_version }}"
+          fi
+          
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          
+          echo "Executing: shorebird patch android $ARGS"
+          shorebird patch android $ARGS

@@ -1,0 +1,52 @@
+name: Shorebird Initial Android Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Release version (overrides pubspec version if set, e.g. 1.0.0+1)'
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  release:
+    name: Build & Register Shorebird Android Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🐦 Setup Shorebird CLI
+        uses: shorebirdtech/setup-shorebird@v1
+        with:
+          shorebird-token: ${{ secrets.SHOREBIRD_TOKEN }}
+
+      - name: 📦 Install Flutter Dependencies
+        run: flutter pub get
+
+      - name: 🔍 Run Flutter Analyze
+        run: flutter analyze
+
+      - name: 🧪 Run Flutter Tests
+        run: flutter test
+
+      - name: 🛠️ Build Shorebird Android Release (AAB)
+        env:
+          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+        run: |
+          ARGS="--artifact=aab --no-confirm"
+          if [ -n "${{ inputs.release_version }}" ]; then
+            ARGS="$ARGS --build-name=$(echo ${{ inputs.release_version }} | cut -d'+' -f1) --build-number=$(echo ${{ inputs.release_version }} | cut -d'+' -f2)"
+          fi
+          
+          echo "Executing: shorebird release android $ARGS"
+          shorebird release android $ARGS
+
+      - name: 📤 Upload Release AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
